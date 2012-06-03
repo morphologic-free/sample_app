@@ -64,4 +64,34 @@ describe "Users" do
       end
     end
   end
+  
+  describe "delete user links" do
+    
+    describe "admin user" do
+      it "should show delete links" do
+        user = FactoryGirl.create(:admin)
+        visit signin_path
+        fill_in :email,     :with => user.email
+        fill_in :password,  :with => user.password
+        click_button
+        click_link "Users"
+        href = "users/#{user.id}"
+        response.should have_selector("a", :content => "delete")
+      end
+    end
+    
+    describe "non-admin user" do
+      it "should not show delete links" do
+        user = FactoryGirl.create(:user)
+        visit signin_path
+        fill_in :email,     :with => user.email
+        fill_in :password,  :with => user.password
+        click_button
+        click_link "Users"
+        response.should_not have_selector("a", :content => "delete")
+      end
+    end
+    
+  end
+    
 end
