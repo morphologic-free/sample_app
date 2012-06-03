@@ -239,6 +239,47 @@ describe UsersController do
     end
   end
   
+  describe "DELETE 'destroy'" do
+    
+    before(:each) do
+      @user = FactoryGirl.create(:user)
+    end
+    
+    describe "as a non-signed-in user" do
+      it "should protect this page" do
+        delete :destroy, :id => @user
+        response.should redirect_to(signin_path)
+      end
+    end
+    
+    describe "as a non-admin user" do
+      it "should protect the page" do
+        test_sign_in(@user)
+        delete :destroy, :id => @user
+        response.should redirect_to(users_path)
+        # flash[:error].should =~ /not authorized/i
+      end
+    end
+    
+    describe "as an admin user" do
+      before(:each) do
+        admin = FactoryGirl.create(:admin, :email => "admin@example.com")
+        test_sign_in(admin)
+      end
+      
+      it "should destroy the user" do
+        lambda do
+          delete :destroy, :id => @user
+        end.should change(User, :count).by(-1)
+      end
+      
+      it "should redirect to the users page" do
+        delete :destroy, :id => @user
+        response.should redirect_to(users_path)
+      end
+    end
+  end
+  
   describe "authentication of edit/update pages" do
     before(:each) do
       @user = FactoryGirl.create(:user)
