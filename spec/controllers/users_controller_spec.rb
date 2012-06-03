@@ -257,14 +257,22 @@ describe UsersController do
         test_sign_in(@user)
         delete :destroy, :id => @user
         response.should redirect_to(users_path)
-        # flash[:error].should =~ /not authorized/i
+        flash[:error].should =~ /not authorized/i
       end
     end
     
     describe "as an admin user" do
       before(:each) do
-        admin = FactoryGirl.create(:admin, :email => "admin@example.com")
-        test_sign_in(admin)
+        @admin = FactoryGirl.create(:admin, :email => "admin@example.com")
+        test_sign_in(@admin)
+      end
+      
+      it "should not be able to destroy the current user" do
+        lambda do
+          delete :destroy, :id => @admin
+          response.should redirect_to(users_path)
+          flash[:error].should =~ /cannot delete/i
+        end.should_not change(User, :count)
       end
       
       it "should destroy the user" do
